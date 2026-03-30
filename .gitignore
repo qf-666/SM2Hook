@@ -1,0 +1,13 @@
+# Theos
+.theos/
+packages/
+obj/
+
+# Artifacts
+*.deb
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
