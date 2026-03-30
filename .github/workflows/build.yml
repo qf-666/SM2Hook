@@ -21,6 +21,15 @@ jobs:
 
       - name: Setup Theos
         uses: itsnebulalol/theos-action@v1.0.0
+        with:
+          theos-sdks: https://github.com/theos/sdks
+          theos-sdks-branch: master
+
+      - name: Pin official Theos SDKs
+        run: |
+          rm -rf "$THEOS/sdks"
+          git clone --depth 1 https://github.com/theos/sdks "$THEOS/sdks"
+          ls -1 "$THEOS/sdks"
 
       - name: Build package
         run: make package FINALPACKAGE=1
