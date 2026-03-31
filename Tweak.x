@@ -23,30 +23,31 @@
 - (void)appendLog:(NSString *)text;
 @end
 
+static SM2FloatingWindow *SM2SharedWindow = nil;
+static dispatch_once_t SM2SharedWindowOnceToken;
+
 @implementation SM2FloatingWindow
 
 + (instancetype)sharedInstance {
-    static SM2FloatingWindow *window = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
+    dispatch_once(&SM2SharedWindowOnceToken, ^{
         CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
         CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
         CGFloat windowWidth = screenWidth - 40;
         CGFloat windowHeight = screenHeight * 0.45;
         CGRect frame = CGRectMake(20, 80, windowWidth, windowHeight);
         
-        window = [[SM2FloatingWindow alloc] initWithFrame:frame];
-        window.expandedFrame = frame;
-        window.windowLevel = UIWindowLevelAlert + 1;
-        window.backgroundColor = [UIColor clearColor];
-        window.clipsToBounds = YES;
-        window.layer.cornerRadius = 16;
-        window.isCollapsed = NO;
+        SM2SharedWindow = [[SM2FloatingWindow alloc] initWithFrame:frame];
+        SM2SharedWindow.expandedFrame = frame;
+        SM2SharedWindow.windowLevel = UIWindowLevelAlert + 1;
+        SM2SharedWindow.backgroundColor = [UIColor clearColor];
+        SM2SharedWindow.clipsToBounds = YES;
+        SM2SharedWindow.layer.cornerRadius = 16;
+        SM2SharedWindow.isCollapsed = NO;
         
-        [window setupUI];
-        [window makeKeyAndVisible];
+        [SM2SharedWindow setupUI];
+        [SM2SharedWindow makeKeyAndVisible];
     });
-    return window;
+    return SM2SharedWindow;
 }
 
 - (void)setupUI {
