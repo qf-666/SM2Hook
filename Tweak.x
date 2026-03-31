@@ -260,6 +260,10 @@ static dispatch_once_t SM2SharedWindowOnceToken;
 // ============================================================
 
 %ctor {
+    if (!NSClassFromString(@"GMSm2Utils")) {
+        return;
+    }
+
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         NSLog(@"[SM2Hook] 悬浮窗初始化...");
         [SM2FloatingWindow sharedInstance];
