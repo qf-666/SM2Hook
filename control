@@ -1,7 +1,7 @@
 Package: com.hook.sm2monitor
 Name: SM2 Encryption Monitor
 Depends: mobilesubstrate
-Version: 1.0.2
+Version: 1.0.3
 Architecture: iphoneos-arm
 Description: Hook GMSm2Utils SM2 encryption to capture plaintext, public key, and ciphertext via floating window.
 Maintainer: Developer

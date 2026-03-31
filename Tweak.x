@@ -24,19 +24,61 @@
 @end
 
 static SM2FloatingWindow *SM2SharedWindow = nil;
-static dispatch_once_t SM2SharedWindowOnceToken;
+static void SM2EnsureFloatingWindowVisible(void);
 
 @implementation SM2FloatingWindow
 
++ (UIWindowScene *)activeWindowScene API_AVAILABLE(ios(13.0)) {
+    NSSet *connectedScenes = [UIApplication sharedApplication].connectedScenes;
+
+    for (UIScene *scene in connectedScenes) {
+        if (![scene isKindOfClass:[UIWindowScene class]]) {
+            continue;
+        }
+
+        if (scene.activationState == UISceneActivationStateForegroundActive) {
+            return (UIWindowScene *)scene;
+        }
+    }
+
+    for (UIScene *scene in connectedScenes) {
+        if (![scene isKindOfClass:[UIWindowScene class]]) {
+            continue;
+        }
+
+        if (scene.activationState == UISceneActivationStateForegroundInactive) {
+            return (UIWindowScene *)scene;
+        }
+    }
+
+    return nil;
+}
+
 + (instancetype)sharedInstance {
-    dispatch_once(&SM2SharedWindowOnceToken, ^{
+    @synchronized(self) {
+        if (SM2SharedWindow) {
+            return SM2SharedWindow;
+        }
+
         CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
         CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
         CGFloat windowWidth = screenWidth - 40;
         CGFloat windowHeight = screenHeight * 0.45;
         CGRect frame = CGRectMake(20, 80, windowWidth, windowHeight);
-        
-        SM2SharedWindow = [[SM2FloatingWindow alloc] initWithFrame:frame];
+
+        if (@available(iOS 13.0, *)) {
+            UIWindowScene *scene = [self activeWindowScene];
+            if (!scene) {
+                NSLog(@"[SM2Hook] 暂无可用 UIWindowScene，延后初始化悬浮窗。");
+                return nil;
+            }
+
+            SM2SharedWindow = [[SM2FloatingWindow alloc] initWithWindowScene:scene];
+            SM2SharedWindow.frame = frame;
+        } else {
+            SM2SharedWindow = [[SM2FloatingWindow alloc] initWithFrame:frame];
+        }
+
         SM2SharedWindow.expandedFrame = frame;
         SM2SharedWindow.windowLevel = UIWindowLevelAlert + 1;
         SM2SharedWindow.backgroundColor = [UIColor clearColor];
@@ -46,7 +88,7 @@ static dispatch_once_t SM2SharedWindowOnceToken;
         
         [SM2SharedWindow setupUI];
         [SM2SharedWindow makeKeyAndVisible];
-    });
+    }
     return SM2SharedWindow;
 }
 
@@ -198,6 +240,15 @@ static dispatch_once_t SM2SharedWindowOnceToken;
 
 @end
 
+static void SM2EnsureFloatingWindowVisible(void) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        SM2FloatingWindow *window = [SM2FloatingWindow sharedInstance];
+        if (window) {
+            NSLog(@"[SM2Hook] 悬浮窗已就绪，等待 SM2 加密调用。");
+        }
+    });
+}
+
 // ============================================================
 // MARK: - Hook 逻辑
 // ============================================================
@@ -262,7 +313,13 @@ static dispatch_once_t SM2SharedWindowOnceToken;
 %ctor {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         NSLog(@"[SM2Hook] 悬浮窗初始化...");
-        [SM2FloatingWindow sharedInstance];
-        NSLog(@"[SM2Hook] 悬浮窗已就绪，等待 SM2 加密调用。");
+        SM2EnsureFloatingWindowVisible();
+
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification
+                                                          object:nil
+                                                           queue:[NSOperationQueue mainQueue]
+                                                      usingBlock:^(__unused NSNotification *note) {
+            SM2EnsureFloatingWindowVisible();
+        }];
     });
 }
