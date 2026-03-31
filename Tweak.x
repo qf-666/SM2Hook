@@ -15,7 +15,7 @@
 @property (nonatomic, strong) UITextView *logTextView;
 @property (nonatomic, strong) UIView *headerView;
 @property (nonatomic, strong) UIButton *clearButton;
-@property (nonatomic, strong) UIButton *copyLogsButton;
+@property (nonatomic, strong) UIButton *clipboardButton;
 @property (nonatomic, strong) UIButton *toggleButton;
 @property (nonatomic, assign) BOOL isCollapsed;
 @property (nonatomic, assign) CGRect expandedFrame;
@@ -80,12 +80,12 @@
     [self.headerView addSubview:self.toggleButton];
     
     // 复制按钮
-    self.copyLogsButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    self.copyLogsButton.frame = CGRectMake(self.bounds.size.width - 88, 0, 44, 44);
-    self.copyLogsButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
-    [self.copyLogsButton setTitle:@"📋" forState:UIControlStateNormal];
-    [self.copyLogsButton addTarget:self action:@selector(copyLogs) forControlEvents:UIControlEventTouchUpInside];
-    [self.headerView addSubview:self.copyLogsButton];
+    self.clipboardButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.clipboardButton.frame = CGRectMake(self.bounds.size.width - 88, 0, 44, 44);
+    self.clipboardButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+    [self.clipboardButton setTitle:@"📋" forState:UIControlStateNormal];
+    [self.clipboardButton addTarget:self action:@selector(copyLogs) forControlEvents:UIControlEventTouchUpInside];
+    [self.headerView addSubview:self.clipboardButton];
     
     // 清除按钮
     self.clearButton = [UIButton buttonWithType:UIButtonTypeSystem];
